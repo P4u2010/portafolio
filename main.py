@@ -30,12 +30,6 @@ with app.app_context():
 def index():
     return render_template('index.html')
 
-# Ruta para procesar el formulario de comentarios
-@app.route('/', methods=['POST'])
-def process_form():
-    button_python = request.form.get('button_python')
-    return render_template('index.html', button_python=button_python)
-
 # Ruta para procesar el formulario de feedback
 @app.route('/feedback', methods=['POST'])
 def feedback():
@@ -43,12 +37,15 @@ def feedback():
         email = request.form['email']
         comment = request.form['text']
         
-        # Aquí puedes guardar el comentario en la base de datos si lo deseas
+        # Crea un nuevo objeto User y guarda en la base de datos
         new_comment = User(email=email, comment=comment)
         db.session.add(new_comment)
         db.session.commit()
 
-        return redirect('/')  # Redirige al usuario a la página principal después de procesar el formulario
+        # Redirige al usuario a la página principal después de procesar el formulario
+        return redirect('/')
 
+# Corre la aplicación Flask en modo debug
 if __name__ == "__main__":
     app.run(debug=True)
+
