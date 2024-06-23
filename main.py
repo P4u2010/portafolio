@@ -1,22 +1,54 @@
-# Import
-from flask import Flask, render_template,request, redirect
+# Importa las clases necesarias desde Flask
+from flask import Flask, render_template, request, redirect
+from flask_sqlalchemy import SQLAlchemy
 
-
-
+# Configura la aplicación Flask
 app = Flask(__name__)
 
-# Página de contenidos en ejecución
+# Configura la base de datos SQLite
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///C:/Users/Pau/Desktop/portafolio/diary.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Inicializa la extensión SQLAlchemy
+db = SQLAlchemy(app)
+
+# Define el modelo de datos para la tabla User
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    comment = db.Column(db.Text, nullable=False)
+
+    def __repr__(self):
+        return f'<User {self.email}>'
+
+# Crea todas las tablas definidas en los modelos
+with app.app_context():
+    db.create_all()
+
+# Ruta para la página principal
 @app.route('/')
 def index():
     return render_template('index.html')
 
-
-# Habilidades dinámicas
+# Ruta para procesar el formulario de comentarios
 @app.route('/', methods=['POST'])
 def process_form():
     button_python = request.form.get('button_python')
     return render_template('index.html', button_python=button_python)
 
+# Ruta para procesar el formulario de feedback
+@app.route('/feedback', methods=['POST'])
+def feedback():
+    if request.method == 'POST':
+        email = request.form['email']
+        comment = request.form['text']
+        
+        # Aquí puedes guardar el comentario en la base de datos si lo deseas
+        new_comment = User(email=email, comment=comment)
+        db.session.add(new_comment)
+        db.session.commit()
+
+        return redirect('/')  # Redirige al usuario a la página principal después de procesar el formulario
 
 if __name__ == "__main__":
     app.run(debug=True)
